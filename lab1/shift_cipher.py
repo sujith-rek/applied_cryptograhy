@@ -8,14 +8,16 @@ def break_shift(cipher):
         shifted_text = ''.join([chr((ord(c) - 65 - shift) % 26 + 65) for c in cipher])
         shifts[shift] = index_of_coincidence.index_of_coincidence(shifted_text)
 
-    # Find the shift with the highest index of coincidence
-    max_ic = max(shifts.values())
+
+    min_diff = min(abs(shifts[shift] - 0.065) for shift in shifts)
+    print(shifts)
     for shift in shifts:
-        if shifts[shift] == max_ic:
+        if abs(shifts[shift] - 0.065) == min_diff:
             return shift
     
 
 
+# cipher ='svyltpwzbtkvsvyzpahtlajvuzljalabyhkpwpzjpunlspatvyiplbsvyltzlkubujchypbzclopjbshpklaulxblwohzlssbzqbzavupiowvzblylcpahlpwzbtlabsshtjvywlythslzbhkhlspambzjlwlsslualzxblbyuhwshjlyhahualcbswbahalzlkjbyzbztpwohylayhjshzzhwaluaahjpapzvjpvzxbhkspavyhavyxbluawlyjvubiphuvzayhwlypujlwavzoptluhlvztvyipzlkalssbzzlklyvzzltwlykpnupzzpttvyipbsshtjvywlyolukylypajvukptluabtkvuljmypunpsshslvlaubujwvyaapavycpahlwlsslualzxblsljabzjvuzlxbhakvuljwohylayhwohylayhbsshtjvywlyuhtypzbzsvyltclzapibsbtlabsshtjvywlyuljjvunbluljlzabaaltwvyluptupzphajvuzljalabyavyavyyovujbzlnlazlkmhbjpibzishukpahbnblpkmlbnphaubujzbzjpwpacpahlcpchtbzbabyuhlbypzbzaltwbzthaapzwyvpubaupzpxbpzhbnblzvsspjpabkpulsltluabtbahjbyuhlaphtapujpkbuaupzppwzbtpumlytluabtalssbzwshjlyhamhbjpibzthbypzwbscpuhywvyahhualsvivyapzaypzapxblthnuhlsltluabtpkzlkzlkipilukbtlupt'
 cipher = input('Enter the cipher text: ')
 shift = break_shift(cipher)
 print('The shift is', shift)
