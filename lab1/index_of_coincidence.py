@@ -3,7 +3,6 @@ import re
 def index_of_coincidence(ciphertext):
 
     ciphertext = ciphertext.lower()
-    # remove punctuation and spaces
     ciphertext = re.sub(r'[^a-z]', '', ciphertext)
 
     english_letter_frequency = {
