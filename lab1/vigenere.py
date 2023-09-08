@@ -1,23 +1,50 @@
 import index_of_coincidence
 import kaisiski_test
+import re
+
+def shift_cipher(cipher, shift):
+    plain_text = ''.join([chr((ord(c) - 65 - shift) % 26 + 65) for c in cipher])
+    return plain_text
 
 def break_vigenere(cipher):
 
-    # Find the key length
-    # key_length = kaisiski_test.kaisiski_test(cipher)
-    # print('The key length is', key_length)
-    key_length = 8
+    cipher = cipher.upper()
+    cipher = re.sub(r'[^A-Z]', '', cipher)
 
-    # we will break the cipher into substrings of length key_length
-    # and then 
-    key = ''
+    # Calculate the key length
+    key_length = kaisiski_test.kaisiski_test(cipher)
+  
+    # make another subbgrop for chars of same index from cipher_groups
+    cipher_subgroups = []
+    for i in range(key_length):
+        sub_str = ''
+        for j in range(len(cipher)):
+            if j % key_length == i:
+                sub_str += cipher[j]
+
+        cipher_subgroups.append(sub_str)
+
+
+    ioc = []
+    for i in range(key_length):
+        individual_shifts = {}
+        for j in range(26):
+            individual_shifts[j] = index_of_coincidence.index_of_coincidence(
+                shift_cipher(cipher_subgroups[i], j)
+            )
+        
+        min_diff = min(abs(individual_shifts[shift] - 0.065) for shift in individual_shifts)
+        for shift in individual_shifts:
+            if abs(individual_shifts[shift] - 0.065) == min_diff:
+                ioc.append(shift)
+                break
+    
+    key = ''.join([chr(i + 65) for i in ioc])
 
     print('The key is', key)
 
-    # Decrypt the cipher
-    plain_text = ''
-    for i in range(len(cipher)):
-        plain_text += chr((ord(cipher[i]) - 65 - ord(key[i % key_length]) + 65) % 26 + 65)
+    plain_text = ''.join([chr((ord(c) - 65 - ioc[i % key_length]) % 26 + 65) for i, c in enumerate(cipher)])
+
     return plain_text
 
 
