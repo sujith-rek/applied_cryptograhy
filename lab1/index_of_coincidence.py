@@ -17,6 +17,7 @@ def index_of_coincidence(ciphertext):
 
     # find letter frequency of text
     letter_frequency = {}
+
     # log the frequency of each letter
     for i in range(len(ciphertext)):
         if ciphertext[i] not in letter_frequency:
@@ -24,7 +25,7 @@ def index_of_coincidence(ciphertext):
         else:
             letter_frequency[ciphertext[i]] += 1
 
-    
+    # Frequency distribution of each letter
     for letter in letter_frequency:
         letter_frequency[letter] /= len(ciphertext)
     
