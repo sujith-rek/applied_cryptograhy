@@ -36,5 +36,3 @@ def index_of_coincidence(ciphertext):
     
     return ic
 
-
-
