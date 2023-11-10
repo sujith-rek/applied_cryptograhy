@@ -7,4 +7,4 @@ otp_key = bin(int(initial_plain_text.encode().hex(), 16) ^ int(initial_cipher_te
 print("OTP key is: ", otp_key)
 
 required_cipher_text_in_hex = hex(int(required_plain_text.encode().hex(), 16) ^ int(otp_key, 2))[2:]
-print("Required cipher text is: ", required_cipher_text_in_hex)
+print("Required cipher text is: ", f'{required_cipher_text_in_hex:0>32}')
