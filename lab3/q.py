@@ -7,14 +7,6 @@ def pad(data):
     return data + b"\x00"*(16-len(data) % 16)
 
 
-# Convert data to RGB format
-def convert_to_RGB(data):
-    r, g, b = tuple(
-        map(lambda d: [data[i] for i in range(0, len(data)) if i % 3 == d], [0, 1, 2]))
-    pixels = tuple(zip(r, g, b))
-    return pixels
-
-
 # Encrypt data using AES. ECB mode is used
 def aes_ecb_encrypt(key, data):
     aes = AES.new(key, AES.MODE_ECB)
@@ -55,7 +47,9 @@ key = b'1111111111111111'
 encrypt_ECB(key, "1.png")
 encrypt_ECB(key, "2.png")
 encrypt_ECB(key, "3.png")
+encrypt_ECB(key, "4.png")
 
 encrypt_CBC(key, "1.png")
 encrypt_CBC(key, "2.png")
 encrypt_CBC(key, "3.png")
+encrypt_CBC(key, "4.png")
