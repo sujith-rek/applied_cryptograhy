@@ -3,3 +3,5 @@ __pycache__
 */*_ecb.*
 */*_cbc.*
 */*_ctr.*
+*/*_ofb.*
+*/*_cfb.*
