@@ -21,6 +21,11 @@ def aes_cbc_encrypt(key, data):
     new_data = aes.encrypt(data)
     return new_data
 
+def aes_ctr_encrypt(key, data):
+    aes = AES.new(key, AES.MODE_CTR, nonce=b'00000000')
+    new_data = aes.encrypt(data)
+    return new_data
+
 
 def encrypt_ECB(key, filename):
     im = Image.open(filename)
@@ -42,14 +47,32 @@ def encrypt_CBC(key, filename):
     en_data.save(filename + "_cbc.jpg", "JPEG")
 
 
+def encrypt_CTR(key, filename):
+    im = Image.open(filename)
+    data = im.convert("RGB").tobytes()
+    original = len(data)
+    en_data = aes_ctr_encrypt(key, pad(data))[:original]
+
+    en_data = Image.frombytes("RGB", im.size, bytearray(en_data))
+    en_data.save(filename + "_ctr.jpg", "JPEG")
+
+
 key = b'1111111111111111'
 
-encrypt_ECB(key, "1.png")
-encrypt_ECB(key, "2.png")
-encrypt_ECB(key, "3.png")
-encrypt_ECB(key, "4.png")
+# encrypt_ECB(key, "1.png")
+# encrypt_ECB(key, "2.png")
+# encrypt_ECB(key, "3.png")
+# encrypt_ECB(key, "4.png")
 
-encrypt_CBC(key, "1.png")
-encrypt_CBC(key, "2.png")
-encrypt_CBC(key, "3.png")
-encrypt_CBC(key, "4.png")
+# encrypt_CBC(key, "1.png")
+# encrypt_CBC(key, "2.png")
+# encrypt_CBC(key, "3.png")
+# encrypt_CBC(key, "4.png")
+
+encrypt_CTR(key, "1.png")
+encrypt_CTR(key, "2.png")
+encrypt_CTR(key, "3.png")
+encrypt_CTR(key, "4.png")
+
+
+
