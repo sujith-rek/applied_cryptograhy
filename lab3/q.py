@@ -92,20 +92,20 @@ def encrypt_CTR(key, filename):
 
 key = b'1111111111111111'
 
-# encrypt_ECB(key, "1.png")
-# encrypt_ECB(key, "2.png")
-# encrypt_ECB(key, "3.png")
-# encrypt_ECB(key, "4.png")
+encrypt_ECB(key, "1.png")
+encrypt_ECB(key, "2.png")
+encrypt_ECB(key, "3.png")
+encrypt_ECB(key, "4.png")
 
-# encrypt_CBC(key, "1.png")
-# encrypt_CBC(key, "2.png")
-# encrypt_CBC(key, "3.png")
-# encrypt_CBC(key, "4.png")
+encrypt_CBC(key, "1.png")
+encrypt_CBC(key, "2.png")
+encrypt_CBC(key, "3.png")
+encrypt_CBC(key, "4.png")
 
-# encrypt_CTR(key, "1.png")
-# encrypt_CTR(key, "2.png")
-# encrypt_CTR(key, "3.png")
-# encrypt_CTR(key, "4.png")
+encrypt_CTR(key, "1.png")
+encrypt_CTR(key, "2.png")
+encrypt_CTR(key, "3.png")
+encrypt_CTR(key, "4.png")
 
 encrypt_OFB(key, "1.png")
 encrypt_OFB(key, "2.png")
