@@ -5,3 +5,4 @@ __pycache__
 */*_ctr.*
 */*_ofb.*
 */*_cfb.*
+*.exe
