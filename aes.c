@@ -312,6 +312,18 @@ void aes_decrypt(unsigned char *input, unsigned char *output, unsigned char *key
     memcpy(output, input, BLOCK_SIZE);
 }
 
+// Function to pad the input data to a multiple of the block size
+// we pad the data with 0x00 bytes
+void pad_data(unsigned char *data, int *data_len)
+{
+    int new_len = *data_len;
+    while (new_len % BLOCK_SIZE != 0)
+    {
+        data[new_len] = 0x00;
+        new_len++;
+    }
+    *data_len = new_len;
+}
 
 void print_block(const unsigned char *block)
 {
@@ -323,25 +335,96 @@ void print_block(const unsigned char *block)
     printf("\n\n");
 }
 
-int main()
+void run_algo()
 {
-    unsigned char plaintext[BLOCK_SIZE] = {0x32, 0x88, 0x31, 0xe0, 0x43, 0x5a, 0x31, 0x37, 0xf6, 0x30, 0x98, 0x07, 0xa8, 0x8d, 0xa2, 0x34};
 
     unsigned char key[BLOCK_SIZE] = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c};
+    printf("*** AES Algorithm ***\n\n");
+    printf("1. Encrypt\n2. Decrypt\n\nEnter your choice:");
+    int choice;
+    scanf("%d", &choice);
 
-    unsigned char ciphertext[BLOCK_SIZE];
-    unsigned char decrypted[BLOCK_SIZE];
+    // char input of size max 5000
+    char input[5000];
 
-    printf("Plaintext:\n");
-    print_block(plaintext);
+    // take input from user
+    printf("Enter the input string: ");
+    scanf("%s", input);
 
-    aes_encrypt(plaintext, ciphertext, key);
-    printf("Ciphertext:\n");
-    print_block(ciphertext);
+    // number of blocks
+    int n_blocks = strlen(input) / BLOCK_SIZE;
+    printf("Number of blocks: %d\n", n_blocks);
 
-    aes_decrypt(ciphertext, decrypted, key);
-    printf("Decrypted:\n");
-    print_block(decrypted);
+    // chars to blocks
+    unsigned char blocks[n_blocks][BLOCK_SIZE];
+
+    if (choice == 1)
+    {
+
+        for (int i = 0; i < n_blocks; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                if (i * BLOCK_SIZE + j < strlen(input))
+                {
+                    blocks[i][j] = input[i * BLOCK_SIZE + j];
+                }
+                else
+                {
+                    blocks[i][j] = 0x00; // padding
+                }
+            }
+        }
+
+        // encrypt blocks one by one and prepare the cipher text appending each block
+        unsigned char ciphertext[n_blocks][BLOCK_SIZE];
+        for (int i = 0; i < n_blocks; i++)
+        {
+            printf("Block %d: \n", i + 1);
+            print_block(blocks[i]);
+            aes_encrypt(blocks[i], ciphertext[i], key);
+            printf("Cipher Block %d: \n", i + 1);
+            print_block(ciphertext[i]);
+        }
+
+        // print the cipher text
+        printf("Cipher Text: ");
+        for (int i = 0; i < n_blocks; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                printf("%02x", ciphertext[i][j]);
+            }
+        }
+    }
+    else if (choice == 2)
+    {
+        // decrypt blocks one by one and prepare the plain text appending each block
+        unsigned char plaintext[n_blocks][BLOCK_SIZE];
+        for (int i = 0; i < n_blocks; i++)
+        {
+            printf("Block %d: \n", i + 1);
+            print_block(blocks[i]);
+            aes_decrypt(blocks[i], plaintext[i], key);
+            printf("Plain Block %d: \n", i + 1);
+            print_block(plaintext[i]);
+        }
+
+        // print the plain text
+        printf("Plain Text: ");
+        for (int i = 0; i < n_blocks; i++)
+        {
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                printf("%c", plaintext[i][j]);
+            }
+        }
+    }
+}
+
+int main()
+{
+    run_algo();
 
     return 0;
 }
