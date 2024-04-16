@@ -1,5 +1,7 @@
 from aes import aes_ecb_encrypt
-from gen import data10, data100, data1000
+from gen import data10, data100, data1000, generate_data
+import threading
+
 
 # S Box -- Rijndael S-box
 aes_sbox = [
@@ -84,10 +86,16 @@ def print_grid(grid):
         print()
 
 
+X_CHANGE = 1
+Y_CHANGE = 2
 # function to lookup in S box
 def lookup(byte):
     x = byte >> 4
     y = byte & 15
+    
+    # x ^= X_CHANGE
+    # y ^= Y_CHANGE
+
     return aes_sbox[x][y]
 
 # function to lookup in Reverse S box
@@ -236,10 +244,22 @@ def enc(key, data):
 
         for grid in grids:
             # substitute
-            sub_bytes_step = [[lookup(val) for val in row] for row in grid]
+
+            def xor_data(inp):
+                ret = inp[0]
+                for i in range(1, 4):
+                    ret ^= inp[i]
+                return ret
+            
+            r_d = xor_data(grid[0])
+            sub_bytes_step = [[lookup((val)) for val in row] for row in grid]
+            # sub_bytes_step = [[lookup((val))^r_d for val in row] for row in grid]
+
+
             # shift rows
             shift_rows_step = [rotate_row_left(
                 sub_bytes_step[i], i) for i in range(4)]
+
             # mix cloumns
             mix_column_step = mix_columns(shift_rows_step)
             # extract key for this round
@@ -276,6 +296,30 @@ def enc(key, data):
     #return in byte format
     return bytes(int_stream)
 
+def enc2(key, data):
+
+    # paddint data with \x00 and break it into blocks of 16
+    pad = bytes(16 - len(data) % 16)
+
+    if len(pad) != 16:
+        data += pad
+
+    grids = break_in_grids_of_16(data)
+
+    number_of_blocks = len(grids)
+    print(number_of_blocks, "blocks")
+
+    threads = []
+
+    for i in range(number_of_blocks):
+        print(grids[i])
+        t = threading.Thread(target=enc, args=(key, grids[i]))
+        threads.append(t)
+        t.start()
+    
+    for t in threads:
+        t.join()
+    
 # function to decrypt
 def dec(key, data):
 
@@ -354,40 +398,47 @@ def pad(data):
 
 
 def compare(data,data2,original1,original2,standard1,standard2):
+
+    diff_arr = []
+
     # bits difference of data --> data2
     diff = 0
     for i in range(len(data)):
         diff += bin(data[i] ^ data2[i]).count('1')
-    print('Original Message bits changed: ', diff)
+    # print('Original Message bits changed: ', diff)
 
     # bits difference of original1 --> original2
     diff = 0
     for i in range(len(original1)):
         diff += bin(original1[i] ^ original2[i]).count('1')
-    print('Modified AES bits changed: ', diff)
+    # print('Modified AES bits changed: ', diff)
+    diff_arr.append(diff)
 
     # bits difference of standard1 --> standard2
     diff = 0
     for i in range(len(standard1)):
         diff += bin(standard1[i] ^ standard2[i]).count('1')
-    print('Standard AES bits changed: ', diff)
+    # print('Standard AES bits changed: ', diff)
+    diff_arr.append(diff)
 
-    print()
+    # print()
 
-
-
+    return diff_arr
 
 
 if __name__ == "__main__":
-    key = b'YELLOW SUBMARINE'
+    key = b'9Q9qeuW1tgaCbjiX'
 
-    dl = 10
+    dl = 1000
     if dl == 10:
         data = data10()
     elif dl == 100:
         data = data100()
     elif dl == 1000:
         data = data1000()
+    else:
+        data = generate_data(dl)
+        print("Data generated")
 
     original1 = ""
     original2 = ""
@@ -395,6 +446,10 @@ if __name__ == "__main__":
     standard2 = ""
     data1 = ""
     data2 = ""
+
+    times = 0
+    equal = 0
+    worse = 0
 
     for i in range(dl-1):
         data1 = data[i]
@@ -406,4 +461,16 @@ if __name__ == "__main__":
         standard1 = aes_ecb_encrypt(key, pad(data1))
         standard2 = aes_ecb_encrypt(key, pad(data2))
 
-        compare(data1,data2,original1,original2,standard1,standard2)
+        diff_arr = compare(data1,data2,original1,original2,standard1,standard2)
+        
+        if diff_arr[0] > diff_arr[1]:
+            times += 1
+        elif diff_arr[0] == diff_arr[1]:
+            equal += 1
+        else:
+            worse += 1
+    
+    print("Modified AES is better than Standard AES for {} times out of {}".format(times,dl-1))
+    print("Modified AES and Standard AES are equal for {} times out of {}".format(equal,dl-1))
+    print("Modified AES is worse than Standard AES for {} times out of {}".format(worse,dl-1))
+    print("Total : {}".format(equal+times))
