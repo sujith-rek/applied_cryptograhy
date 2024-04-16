@@ -86,15 +86,15 @@ def print_grid(grid):
         print()
 
 
-X_CHANGE = 1
-Y_CHANGE = 2
+X_CHANGE = 5
+Y_CHANGE = 3
 # function to lookup in S box
 def lookup(byte):
     x = byte >> 4
     y = byte & 15
     
-    # x ^= X_CHANGE
-    # y ^= Y_CHANGE
+    x ^= X_CHANGE
+    y ^= Y_CHANGE
 
     return aes_sbox[x][y]
 
@@ -252,13 +252,22 @@ def enc(key, data):
                 return ret
             
             r_d = xor_data(grid[0])
-            sub_bytes_step = [[lookup((val)) for val in row] for row in grid]
-            # sub_bytes_step = [[lookup((val))^r_d for val in row] for row in grid]
+            # sub_bytes_step = [[lookup((val)) for val in row] for row in grid]
+            sub_bytes_step = [[lookup((val))^r_d for val in row] for row in grid]
 
 
             # shift rows
-            shift_rows_step = [rotate_row_left(
-                sub_bytes_step[i], i) for i in range(4)]
+            # shift_rows_step = [rotate_row_left(
+            #     sub_bytes_step[i], i) for i in range(4)]
+
+            shift_rows_step = []
+            for i in range(4):
+                # if even row, shift left
+                if i % 2 == 0:
+                    shift_rows_step.append(rotate_row_left(sub_bytes_step[i], i))
+                # if odd row, shift right
+                else:
+                    shift_rows_step.append(rotate_row_left(sub_bytes_step[i], -1 * i))
 
             # mix cloumns
             mix_column_step = mix_columns(shift_rows_step)
@@ -429,7 +438,7 @@ def compare(data,data2,original1,original2,standard1,standard2):
 if __name__ == "__main__":
     key = b'9Q9qeuW1tgaCbjiX'
 
-    dl = 1000
+    dl = 100000
     if dl == 10:
         data = data10()
     elif dl == 100:
