@@ -1,7 +1,15 @@
 from aes import aes_ecb_encrypt
 from gen import data10, data100, data1000, generate_data
-import threading
+import time
 
+def timer(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"Execution time: {end - start}")
+        return result
+    return wrapper
 
 # S Box -- Rijndael S-box
 aes_sbox = [
@@ -86,15 +94,18 @@ def print_grid(grid):
         print()
 
 
-X_CHANGE = 5
-Y_CHANGE = 3
+X_CHANGE = 4
+Y_CHANGE = 2
 # function to lookup in S box
 def lookup(byte):
     x = byte >> 4
     y = byte & 15
     
-    x ^= X_CHANGE
-    y ^= Y_CHANGE
+    # x ^= X_CHANGE
+    # y ^= Y_CHANGE
+
+    x = (x+X_CHANGE ) % 16
+    y = (y+Y_CHANGE ) % 16
 
     return aes_sbox[x][y]
 
@@ -115,7 +126,6 @@ def multiply_by_2(v):
 # helping function for mix_columns
 def multiply_by_3(v):
     return multiply_by_2(v) ^ v
-
 
 # function to mix columns
 def mix_columns(grid):
@@ -141,7 +151,6 @@ def mix_column(column):
     ]
     return r
 
-
 # rotate rows
 def rotate_row_left(row, n=1):
     return row[n:] + row[:n]
@@ -162,7 +171,6 @@ def add_sub_key(block_grid, key_grid):
 def extract_key_for_round(expanded_key, round):
     return [row[round*4: round*4 + 4] for row in expanded_key]
 
-
 # funtion to break string in 16 byte block of 4 bytes by 4 bytes
 def break_in_grids_of_16(s):
     all = []
@@ -176,7 +184,6 @@ def break_in_grids_of_16(s):
         
     #print(all)
     return all
-
 
 # function to expand key
 def expand_key(key, rounds):
@@ -212,6 +219,14 @@ def expand_key(key, rounds):
 
     return key_grid
 
+def initial_permutation(data):
+    table = [[4, 7, 15, 11], [9, 2, 14, 5], [6, 10, 8, 13], [12, 3, 1, 0]]
+    new_data = [[0 for _ in range(4)] for _ in range(4)]
+    for i in range(4):
+        for j in range(4):
+            new_data[i][j] = data[table[i][j]//4][table[i][j]%4]
+    
+    return new_data
 
 # function to encrypt
 def enc(key, data):
@@ -223,6 +238,8 @@ def enc(key, data):
         data += pad
 
     grids = break_in_grids_of_16(data)
+
+    # grids = [initial_permutation(grid) for grid in grids]
 
     # Expand the key for the multiple rounds
     expanded_key = expand_key(key, 11)
@@ -251,7 +268,15 @@ def enc(key, data):
                     ret ^= inp[i]
                 return ret
             
-            r_d = xor_data(grid[0])
+            def xor_r_key(r_k):
+                ret = r_k[0][0]
+                for i in range(1, 4):
+                    for j in range(4):
+                        ret ^= r_k[i][j]
+                return ret
+
+            
+            r_d = xor_r_key(round_key)
             # sub_bytes_step = [[lookup((val)) for val in row] for row in grid]
             sub_bytes_step = [[lookup((val))^r_d for val in row] for row in grid]
 
@@ -261,13 +286,14 @@ def enc(key, data):
             #     sub_bytes_step[i], i) for i in range(4)]
 
             shift_rows_step = []
+            x_r_k = xor_r_key(round_key)
             for i in range(4):
                 # if even row, shift left
                 if i % 2 == 0:
-                    shift_rows_step.append(rotate_row_left(sub_bytes_step[i], i))
+                    shift_rows_step.append(rotate_row_left(sub_bytes_step[i], (x_r_k+i)%4))
                 # if odd row, shift right
                 else:
-                    shift_rows_step.append(rotate_row_left(sub_bytes_step[i], -1 * i))
+                    shift_rows_step.append(rotate_row_left(sub_bytes_step[i], -1 * ((x_r_k+i)%4)))
 
             # mix cloumns
             mix_column_step = mix_columns(shift_rows_step)
@@ -305,30 +331,6 @@ def enc(key, data):
     #return in byte format
     return bytes(int_stream)
 
-def enc2(key, data):
-
-    # paddint data with \x00 and break it into blocks of 16
-    pad = bytes(16 - len(data) % 16)
-
-    if len(pad) != 16:
-        data += pad
-
-    grids = break_in_grids_of_16(data)
-
-    number_of_blocks = len(grids)
-    print(number_of_blocks, "blocks")
-
-    threads = []
-
-    for i in range(number_of_blocks):
-        print(grids[i])
-        t = threading.Thread(target=enc, args=(key, grids[i]))
-        threads.append(t)
-        t.start()
-    
-    for t in threads:
-        t.join()
-    
 # function to decrypt
 def dec(key, data):
 
@@ -405,7 +407,6 @@ def pad(data):
         data += pad
     return data
 
-
 def compare(data,data2,original1,original2,standard1,standard2):
 
     diff_arr = []
@@ -434,11 +435,12 @@ def compare(data,data2,original1,original2,standard1,standard2):
 
     return diff_arr
 
-
-if __name__ == "__main__":
+# if __name__ == "__main__":
+@timer
+def main():
     key = b'9Q9qeuW1tgaCbjiX'
 
-    dl = 100000
+    dl = 100000000
     if dl == 10:
         data = data10()
     elif dl == 100:
@@ -483,3 +485,6 @@ if __name__ == "__main__":
     print("Modified AES and Standard AES are equal for {} times out of {}".format(equal,dl-1))
     print("Modified AES is worse than Standard AES for {} times out of {}".format(worse,dl-1))
     print("Total : {}".format(equal+times))
+
+if __name__ == "__main__":
+    main()

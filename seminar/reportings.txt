@@ -5,12 +5,6 @@ Modified AES is worse than Standard AES for 47840 times out of 99999
 Total : 52159
 When X_CHANGE, Y_CHANGE is XORed before lookup
 
-Data generated
-Modified AES is better than Standard AES for 47632 times out of 99999
-Modified AES and Standard AES are equal for 5030 times out of 99999
-Modified AES is worse than Standard AES for 47337 times out of 99999
-Total : 52662
-When each lookedup value is XORed with XOR of key 
 
 Data generated
 Modified AES is better than Standard AES for 47425 times out of 99999
@@ -18,10 +12,3 @@ Modified AES and Standard AES are equal for 4952 times out of 99999
 Modified AES is worse than Standard AES for 47622 times out of 99999
 Total : 52377
 When shift rows even left shift, odd right shift
-
-Data generated
-Modified AES is better than Standard AES for 47641 times out of 99999
-Modified AES and Standard AES are equal for 4956 times out of 99999
-Modified AES is worse than Standard AES for 47402 times out of 99999
-Total : 52597
-Mix of shift rows,xor before and after lookup
