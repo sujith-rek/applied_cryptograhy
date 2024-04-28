@@ -261,12 +261,6 @@ def enc(key, data):
 
         for grid in grids:
             # substitute
-
-            def xor_data(inp):
-                ret = inp[0]
-                for i in range(1, 4):
-                    ret ^= inp[i]
-                return ret
             
             def xor_r_key(r_k):
                 ret = r_k[0][0]
@@ -449,7 +443,7 @@ def main():
         data = data1000()
     else:
         data = generate_data(dl)
-        print("Data generated")
+        print("Data generated of length: ", dl)
 
     original1 = ""
     original2 = ""
